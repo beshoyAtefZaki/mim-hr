@@ -1,0 +1,124 @@
+{
+ "autoname": "format:{employee}-{new_project}-{#####} ",
+ "creation": "2020-02-03 09:15:33.818367",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "employee_department",
+  "current_project",
+  "start_date",
+  "end_date",
+  "column_break_5",
+  "new_project",
+  "start_from",
+  "end_in",
+  "ramark_section",
+  "reason",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Read Only",
+   "label": "Employee Name"
+  },
+  {
+   "fetch_from": "employee.department",
+   "fieldname": "employee_department",
+   "fieldtype": "Read Only",
+   "label": "Employee Department"
+  },
+  {
+   "fieldname": "current_project",
+   "fieldtype": "Link",
+   "label": "Current Project",
+   "options": "Project",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Read Only",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Read Only",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "new_project",
+   "fieldtype": "Link",
+   "label": "New Project",
+   "options": "Project"
+  },
+  {
+   "fieldname": "ramark_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Small Text",
+   "label": "Reason"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Employee Project Management",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "start_from",
+   "fieldtype": "Date",
+   "label": "Start From"
+  },
+  {
+   "fieldname": "end_in",
+   "fieldtype": "Date",
+   "label": "End in"
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2020-02-04 08:18:43.232139",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Employee Project Management",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
+}

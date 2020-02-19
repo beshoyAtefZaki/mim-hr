@@ -1,0 +1,68 @@
+{
+ "creation": "2019-12-14 16:02:17.468467",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "country",
+  "start_date",
+  "end_date",
+  "ticket_fees",
+  "companions_details"
+ ],
+ "fields": [
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Country",
+   "options": "Country",
+   "reqd": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "ticket_fees",
+   "fieldtype": "Data",
+   "label": "Ticket Fees"
+  },
+  {
+   "fieldname": "companions_details",
+   "fieldtype": "Table",
+   "label": "COMPANIONS Details",
+   "options": "Companions"
+  }
+ ],
+ "modified": "2019-12-16 15:21:02.106020",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Flight Tickets Rules",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "country",
+ "track_changes": 1
+}

@@ -1,0 +1,62 @@
+{
+ "creation": "2019-12-14 16:00:48.155372",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "companion_type",
+  "age_from",
+  "age_to",
+  "ticket_fees"
+ ],
+ "fields": [
+  {
+   "fieldname": "companion_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Companion Type",
+   "options": "Companion Type"
+  },
+  {
+   "fieldname": "age_from",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Age From"
+  },
+  {
+   "fieldname": "age_to",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Age To"
+  },
+  {
+   "fieldname": "ticket_fees",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Ticket Fees"
+  }
+ ],
+ "modified": "2020-02-17 01:34:56.877573",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Companions",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

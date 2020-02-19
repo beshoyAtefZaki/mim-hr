@@ -1,0 +1,104 @@
+{
+ "autoname": "format:{document_title}-{issue_date}",
+ "creation": "2020-02-03 07:59:26.444640",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "document_title",
+  "issue_date",
+  "expiry_date",
+  "document",
+  "column_break_5",
+  "document_type",
+  "document_number",
+  "membership_number",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "document_title",
+   "fieldtype": "Data",
+   "label": "Document Title",
+   "unique": 1
+  },
+  {
+   "fieldname": "issue_date",
+   "fieldtype": "Date",
+   "label": "Issue Date"
+  },
+  {
+   "fieldname": "expiry_date",
+   "fieldtype": "Date",
+   "label": "Expiry Date"
+  },
+  {
+   "fieldname": "document",
+   "fieldtype": "Attach",
+   "label": "Document"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "label": "Document Type",
+   "options": "Document Type"
+  },
+  {
+   "fieldname": "document_number",
+   "fieldtype": "Data",
+   "label": "Document Number"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Company Document",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "membership_number",
+   "fieldtype": "Data",
+   "label": "Membership Number"
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2020-02-16 22:04:40.845496",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Company Document",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
+}

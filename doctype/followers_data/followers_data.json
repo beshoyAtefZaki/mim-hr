@@ -1,0 +1,71 @@
+{
+ "creation": "2019-12-02 22:00:24.738360",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "id_number",
+  "name1",
+  "relation",
+  "nationality",
+  "birth_date",
+  "passport_no",
+  "id_valid_till"
+ ],
+ "fields": [
+  {
+   "fieldname": "id_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "ID Number"
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name"
+  },
+  {
+   "fieldname": "relation",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Relation",
+   "options": "Wife\nSon\nDaughter"
+  },
+  {
+   "fieldname": "nationality",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Nationality",
+   "options": "Nationality"
+  },
+  {
+   "fieldname": "birth_date",
+   "fieldtype": "Date",
+   "label": "Birth Date"
+  },
+  {
+   "fieldname": "id_valid_till",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "ID valid till"
+  },
+  {
+   "fieldname": "passport_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Passport No"
+  }
+ ],
+ "istable": 1,
+ "modified": "2019-12-16 08:08:17.087564",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Followers Data",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -1,0 +1,58 @@
+{
+ "creation": "2020-02-03 09:01:07.723624",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "project",
+  "start_date",
+  "end_date",
+  "employee_project_reference",
+  "remark"
+ ],
+ "fields": [
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Project",
+   "options": "Project",
+   "reqd": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "End Date"
+  },
+  {
+   "fieldname": "remark",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Remark"
+  },
+  {
+   "fieldname": "employee_project_reference",
+   "fieldtype": "Link",
+   "label": "Employee Project Reference",
+   "options": "Employee Project Management",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-02-06 07:42:36.554700",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Projects",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -1,0 +1,155 @@
+{
+ "autoname": "format:{employee}-{start_date}-{#####} ",
+ "creation": "2020-02-17 02:09:56.057146",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "employee_id",
+  "start_date",
+  "end_date",
+  "column_break_4",
+  "residence_number",
+  "boarder_number",
+  "work_license_number",
+  "work_license_invoice_no",
+  "work_license_fee",
+  "residence_renewal_fee",
+  "attachments_section",
+  "work_license_invoice",
+  "column_break_13",
+  "work_license",
+  "column_break_15",
+  "residence_renewal",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Read Only",
+   "label": "Employee Name"
+  },
+  {
+   "fetch_from": "employee.employee_id",
+   "fieldname": "employee_id",
+   "fieldtype": "Read Only",
+   "label": "Employee ID"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "residence_number",
+   "fieldtype": "Data",
+   "label": "Residence Number"
+  },
+  {
+   "fieldname": "boarder_number",
+   "fieldtype": "Data",
+   "label": "Boarder Number"
+  },
+  {
+   "fieldname": "work_license_number",
+   "fieldtype": "Data",
+   "label": "Work License Number"
+  },
+  {
+   "fieldname": "work_license_invoice_no",
+   "fieldtype": "Data",
+   "label": "Work License Invoice NO"
+  },
+  {
+   "fieldname": "work_license_fee",
+   "fieldtype": "Currency",
+   "label": "Work License Fee"
+  },
+  {
+   "fieldname": "residence_renewal_fee",
+   "fieldtype": "Currency",
+   "label": "Residence Renewal Fee"
+  },
+  {
+   "fieldname": "attachments_section",
+   "fieldtype": "Section Break",
+   "label": "Attachments"
+  },
+  {
+   "fieldname": "work_license_invoice",
+   "fieldtype": "Attach",
+   "label": "Work License Invoice"
+  },
+  {
+   "fieldname": "work_license",
+   "fieldtype": "Attach",
+   "label": "Work License"
+  },
+  {
+   "fieldname": "residence_renewal",
+   "fieldtype": "Attach",
+   "label": "Residence Renewal"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Residence Data",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_13",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2020-02-17 02:28:39.790664",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Residence Data",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
+}
