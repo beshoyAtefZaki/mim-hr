@@ -1,0 +1,67 @@
+{
+ "creation": "2020-02-24 05:45:34.562337",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "start_date",
+  "end_date",
+  "residence_number",
+  "work_license_number",
+  "work_license_fee",
+  "re_renew",
+  "posting_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "End Date"
+  },
+  {
+   "fieldname": "residence_number",
+   "fieldtype": "Data",
+   "label": "residence_number"
+  },
+  {
+   "fieldname": "work_license_number",
+   "fieldtype": "Data",
+   "label": "Work License Number"
+  },
+  {
+   "fieldname": "work_license_fee",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Work License Fee"
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting date"
+  },
+  {
+   "fieldname": "re_renew",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Residence Renewal Fee"
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-02-24 06:35:46.716202",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Residence Data Table",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

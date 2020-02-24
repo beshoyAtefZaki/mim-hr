@@ -2,7 +2,7 @@
  "allow_events_in_timeline": 1,
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:employee_id",
+ "autoname": "naming_series:",
  "creation": "2013-03-07 09:04:18",
  "doctype": "DocType",
  "document_type": "Setup",
@@ -11,13 +11,14 @@
  "field_order": [
   "basic_information",
   "employee",
+  "general_number",
   "naming_series",
-  "employee_id",
   "salutation",
   "first_name",
   "middle_name",
   "last_name",
   "employee_name",
+  "citizen_or_resident",
   "image",
   "column_break1",
   "company",
@@ -50,9 +51,12 @@
   "column_break_31",
   "grade",
   "branch",
-  "organization_profile",
+  "attendance_and_leave_details",
   "leave_policy",
+  "attendance_device_id",
+  "column_break_44",
   "holiday_list",
+  "default_shift",
   "salary_information",
   "salary_mode",
   "bank_name",
@@ -123,7 +127,6 @@
   {
    "fieldname": "naming_series",
    "fieldtype": "Select",
-   "hidden": 1,
    "label": "Series",
    "no_copy": 1,
    "oldfieldname": "naming_series",
@@ -400,12 +403,6 @@
    "oldfieldname": "branch",
    "oldfieldtype": "Link",
    "options": "Branch"
-  },
-  {
-   "collapsible": 1,
-   "fieldname": "organization_profile",
-   "fieldtype": "Section Break",
-   "label": "Leave Details"
   },
   {
    "fieldname": "leave_policy",
@@ -752,18 +749,44 @@
    "label": "Old Parent"
   },
   {
-   "bold": 1,
-   "fieldname": "employee_id",
+   "fieldname": "attendance_device_id",
    "fieldtype": "Data",
-   "label": "Employee ID",
-   "reqd": 1,
+   "label": "Attendance Device ID (Biometric/RF tag ID)",
+   "no_copy": 1,
    "unique": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "attendance_and_leave_details",
+   "fieldtype": "Section Break",
+   "label": "Attendance and Leave Details"
+  },
+  {
+   "fieldname": "column_break_44",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_shift",
+   "fieldtype": "Link",
+   "label": "Default Shift",
+   "options": "Shift Type"
+  },
+  {
+   "fieldname": "general_number",
+   "fieldtype": "Data",
+   "label": " General Number "
+  },
+  {
+   "fieldname": "citizen_or_resident",
+   "fieldtype": "Select",
+   "label": "Citizen or Resident",
+   "options": "\nCitizen\nResident"
   }
  ],
  "icon": "fa fa-user",
  "idx": 24,
  "image_field": "image",
- "modified": "2019-11-09 08:45:02.650927",
+ "modified": "2020-02-24 13:17:50.317460",
  "modified_by": "Administrator",
  "module": "HR",
  "name": "Employee",

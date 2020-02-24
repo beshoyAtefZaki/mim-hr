@@ -1,0 +1,90 @@
+{
+ "creation": "2020-02-18 14:20:36.266052",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "parent1",
+  "emplyee_name",
+  "employee_general_number",
+  "employee_business_license",
+  "business_license_price",
+  "employee_border_number",
+  "resident_no",
+  "resident_price",
+  "the_expiry_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "length": 25,
+   "options": "Employee"
+  },
+  {
+   "fieldname": "employee_general_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Employee General Number"
+  },
+  {
+   "fieldname": "employee_business_license",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Employee business license"
+  },
+  {
+   "fieldname": "business_license_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "business license price"
+  },
+  {
+   "fieldname": "employee_border_number",
+   "fieldtype": "Data",
+   "label": "Employee Border Number"
+  },
+  {
+   "fieldname": "resident_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Resident No"
+  },
+  {
+   "fieldname": "resident_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Resident Price"
+  },
+  {
+   "fieldname": "emplyee_name",
+   "fieldtype": "Data",
+   "label": "Emplyee Name"
+  },
+  {
+   "fieldname": "the_expiry_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "The expiry date "
+  },
+  {
+   "fieldname": "parent1",
+   "fieldtype": "Link",
+   "label": "Parent ",
+   "options": "Residence Data"
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-02-24 06:13:17.247228",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Renewal of residence Table",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

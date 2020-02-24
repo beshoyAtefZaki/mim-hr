@@ -1,0 +1,27 @@
+{
+ "creation": "2020-02-24 08:06:37.465983",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "trems"
+ ],
+ "fields": [
+  {
+   "fieldname": "trems",
+   "fieldtype": "Markdown Editor",
+   "label": "Trems"
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-02-24 08:06:37.465983",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Contract Terms",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

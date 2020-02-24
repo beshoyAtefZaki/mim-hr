@@ -1,0 +1,46 @@
+{
+ "creation": "2020-02-18 09:55:04.068683",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "salary_component",
+  "percent",
+  "type"
+ ],
+ "fields": [
+  {
+   "fieldname": "salary_component",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Salary component",
+   "options": "Salary Component",
+   "reqd": 1
+  },
+  {
+   "fieldname": "percent",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Percent"
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "TYPE",
+   "options": "\nResident\nCitizen"
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-02-18 11:03:46.526224",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Social insurance Settings Table",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

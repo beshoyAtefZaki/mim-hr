@@ -1,4 +1,5 @@
 {
+ "allow_import": 1,
  "autoname": "format:{employee}-{start_date}-{#####} ",
  "creation": "2020-02-17 02:09:56.057146",
  "doctype": "DocType",
@@ -8,6 +9,7 @@
   "employee",
   "employee_name",
   "employee_id",
+  "general_number",
   "start_date",
   "end_date",
   "column_break_4",
@@ -23,14 +25,19 @@
   "work_license",
   "column_break_15",
   "residence_renewal",
-  "amended_from"
+  "amended_from",
+  "section_break_21",
+  "history"
  ],
  "fields": [
   {
    "fieldname": "employee",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Employee",
-   "options": "Employee"
+   "options": "Employee",
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fetch_from": "employee.employee_name",
@@ -39,7 +46,6 @@
    "label": "Employee Name"
   },
   {
-   "fetch_from": "employee.employee_id",
    "fieldname": "employee_id",
    "fieldtype": "Read Only",
    "label": "Employee ID"
@@ -49,6 +55,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "residence_number",
    "fieldtype": "Data",
    "label": "Residence Number"
@@ -59,6 +66,7 @@
    "label": "Boarder Number"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "work_license_number",
    "fieldtype": "Data",
    "label": "Work License Number"
@@ -69,11 +77,13 @@
    "label": "Work License Invoice NO"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "work_license_fee",
    "fieldtype": "Currency",
    "label": "Work License Fee"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "residence_renewal_fee",
    "fieldtype": "Currency",
    "label": "Residence Renewal Fee"
@@ -116,33 +126,56 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "start_date",
    "fieldtype": "Date",
    "label": "Start Date"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "end_date",
    "fieldtype": "Date",
    "label": "End Date"
+  },
+  {
+   "fetch_from": "employee.general_number",
+   "fieldname": "general_number",
+   "fieldtype": "Data",
+   "label": "General Number"
+  },
+  {
+   "fieldname": "section_break_21",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "history",
+   "fieldtype": "Table",
+   "label": "History",
+   "options": "Residence Data Table",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
- "modified": "2020-02-17 02:28:39.790664",
+ "modified": "2020-02-24 16:13:20.079273",
  "modified_by": "Administrator",
  "module": "HR",
  "name": "Residence Data",
  "owner": "Administrator",
  "permissions": [
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,
+   "import": 1,
    "print": 1,
    "read": 1,
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],

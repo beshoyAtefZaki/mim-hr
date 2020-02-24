@@ -1,0 +1,86 @@
+{
+ "creation": "2020-02-18 09:57:45.263857",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "social_insurance_account",
+  "column_break_3",
+  "company_number",
+  "cetizen_employee_section",
+  "cetizen_employee",
+  "resedent_employee_section",
+  "resedent_employee"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "social_insurance_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Social insurance Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Company Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cetizen_employee_section",
+   "fieldtype": "Section Break",
+   "label": "Cetizen Employee"
+  },
+  {
+   "fieldname": "cetizen_employee",
+   "fieldtype": "Table",
+   "label": "Cetizen Employee",
+   "options": "Social insurance Settings Table"
+  },
+  {
+   "fieldname": "resedent_employee_section",
+   "fieldtype": "Section Break",
+   "label": "Resedent Employee"
+  },
+  {
+   "fieldname": "resedent_employee",
+   "fieldtype": "Table",
+   "label": "Resedent Employee",
+   "options": "Social insurance Settings Table"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2020-02-18 10:43:27.753480",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Social insurance Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

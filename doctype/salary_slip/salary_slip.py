@@ -4,10 +4,11 @@
 from __future__ import unicode_literals
 import frappe, erpnext
 import datetime, math
-from frappe.utils import add_days, cint, cstr, flt, getdate, rounded, date_diff, money_in_words
+
+from frappe.utils import add_days, cint, cstr, flt, getdate, rounded, date_diff, money_in_words, getdate
 from frappe.model.naming import make_autoname
+
 from frappe import msgprint, _
-from collections import Counter
 from erpnext.hr.doctype.payroll_entry.payroll_entry import get_start_end_dates
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 from erpnext.utilities.transaction_base import TransactionBase
@@ -16,7 +17,6 @@ from erpnext.hr.doctype.additional_salary.additional_salary import get_additiona
 from erpnext.hr.doctype.payroll_period.payroll_period import get_period_factor, get_payroll_period
 from erpnext.hr.doctype.employee_benefit_application.employee_benefit_application import get_benefit_component_amount
 from erpnext.hr.doctype.employee_benefit_claim.employee_benefit_claim import get_benefit_claim_amount, get_last_payroll_period_benefits
-from erpnext.utils.utils import Overlab_Dates, get_month_days,get_over_time_hour_range,get_daily_work_hours
 
 class SalarySlip(TransactionBase):
 	def __init__(self, *args, **kwargs):
@@ -35,6 +35,9 @@ class SalarySlip(TransactionBase):
 		self.name = make_autoname(self.series)
 
 	def validate(self):
+		salary_mode= get_salary_detatil(self.employee)
+		if salary_mode :
+			self.salary_mode = salary_mode
 		self.status = self.get_status()
 		self.validate_dates()
 		self.check_existing()
@@ -77,95 +80,6 @@ class SalarySlip(TransactionBase):
 		from frappe.model.naming import revert_series_if_last
 		revert_series_if_last(self.series, self.name)
 
-	def ValidateDamages(self, data):
-		MonthDays = get_month_days(self.start_date)
-
-		self.damagesAmount = 0.0
-		for item in data["deductions"]:
-			if item["salary_component"] == "Damages":
-				self.damagesAmount += float(item["amount"])
-
-		if self.damagesAmount > 0:
-			if (self.damagesAmount > ((float(data["gross_pay"]) / MonthDays) * 5)):
-				frappe.throw(_("Sorry....Damage total should not be more than five days of month salary") + " (" + str(
-					((float(data["gross_pay"]) / MonthDays) * 5)) + ")")
-
-	def Check_Stop_Working(self, Start_Date, End_Date, Employee):
-		MonthDays = get_month_days(self.start_date)
-		Stop_working_Percentage = 0.0
-
-		Stop_Working_Dict = frappe.db.sql((
-			""" 
-			SELECT cut_percentage,start_date,end_date
-				from `tabStop Working Data`
-					where parent =%(Employee)s	
-						and docstatus='0'
-						and (
-						%(Start_Date)s  BETWEEN start_date and end_date or %(End_Date)s  BETWEEN start_date and end_date
-						or (%(Start_Date)s   >= start_date and %(End_Date)s  <= end_date)
-						or (start_date BETWEEN %(Start_Date)s  and %(End_Date)s )
-						or (end_date BETWEEN %(Start_Date)s  and %(End_Date)s )
-						or %(End_Date)s   <= end_date				
-						)
-			"""
-		), ({'Employee': Employee, "Start_Date": Start_Date, "End_Date": End_Date}),
-			as_dict=1)
-
-		if Stop_Working_Dict:
-			Stop_Working_Dict = Stop_Working_Dict[0]
-			cut_percentage = Stop_Working_Dict["cut_percentage"]
-			start_date = Stop_Working_Dict["start_date"]
-			end_date = Stop_Working_Dict["end_date"]
-
-			Stop_working_Days = Overlab_Dates(str(start_date), str(end_date), str(Start_Date), str(End_Date))
-
-			if Stop_working_Days > MonthDays:
-				Stop_working_Days = MonthDays
-
-			if Stop_working_Days > 0:
-				Stop_working_Percentage = float(float(Stop_working_Days) / MonthDays) * float(
-					float(cut_percentage) / 100) + float(MonthDays - Stop_working_Days) / MonthDays
-
-		return Stop_working_Percentage
-
-	def check_treatment_per(self, Start_Date, End_Date, Employee):
-		MonthDays = get_month_days(self.start_date)
-		treatment_percentage = 1.0
-
-		treatment_dict = frappe.db.sql((
-			""" 
-			SELECT treatment_start_date,treatment_end_date,injury_type
-				from `tabWork Injury`
-					where parent =%(Employee)s	
-						and docstatus='0'
-						and (
-						%(Start_Date)s  BETWEEN treatment_start_date and treatment_end_date or %(End_Date)s  BETWEEN treatment_start_date and treatment_end_date
-						or (%(Start_Date)s   >= treatment_start_date and %(End_Date)s  <= treatment_end_date)
-						or (treatment_start_date BETWEEN %(Start_Date)s  and %(End_Date)s )
-						or (treatment_end_date BETWEEN %(Start_Date)s  and %(End_Date)s )
-						or %(End_Date)s   <= treatment_end_date				
-						)
-			"""
-		), ({'Employee': Employee, "Start_Date": Start_Date, "End_Date": End_Date}),
-			as_dict=1)
-		if treatment_dict:
-			treatment_dict = treatment_dict[0]
-			treatment_start_date = treatment_dict["treatment_start_date"]
-			treatment_end_date = treatment_dict["treatment_end_date"]
-			injury_type = treatment_dict["injury_type"]
-			discount_percentage = frappe.db.get_value("Injury Type", injury_type, "discount_percentage")
-			treatment_days = Overlab_Dates(str(treatment_start_date), str(treatment_end_date), str(Start_Date),
-										   str(End_Date))
-			cut_percentage = discount_percentage
-			if treatment_days > MonthDays:
-				treatment_days = MonthDays
-
-			if treatment_days > 0:
-				treatment_percentage = float(float(treatment_days) / MonthDays) * float(
-					float(cut_percentage) / 100) + float(MonthDays - treatment_days) / MonthDays
-
-		return treatment_percentage
-
 	def get_status(self):
 		if self.docstatus == 0:
 			status = "Draft"
@@ -184,7 +98,7 @@ class SalarySlip(TransactionBase):
 			ret_exist = frappe.db.sql("""select name from `tabSalary Slip`
 						where start_date = %s and end_date = %s and docstatus != 2
 						and employee = %s and name != %s""",
-									  (self.start_date, self.end_date, self.employee, self.name))
+						(self.start_date, self.end_date, self.employee, self.name))
 			if ret_exist:
 				self.employee = ''
 				frappe.throw(_("Salary Slip of employee {0} already created for this period").format(self.employee))
@@ -204,13 +118,12 @@ class SalarySlip(TransactionBase):
 		if self.employee:
 			self.set("earnings", [])
 			self.set("deductions", [])
-			self.set("insurance", [])
 
 			if not self.salary_slip_based_on_timesheet:
 				self.get_date_details()
 			self.validate_dates()
 			joining_date, relieving_date = frappe.get_cached_value("Employee", self.employee,
-																   ["date_of_joining", "relieving_date"])
+				["date_of_joining", "relieving_date"])
 
 			self.get_leave_details(joining_date, relieving_date)
 			struct = self.check_sal_struct(joining_date, relieving_date)
@@ -247,7 +160,7 @@ class SalarySlip(TransactionBase):
 			order by sa.from_date desc
 			limit 1
 		""" %cond, {'employee': self.employee, 'start_date': self.start_date,
-					'end_date': self.end_date, 'joining_date': joining_date})
+			'end_date': self.end_date, 'joining_date': joining_date})
 
 		if st_name:
 			self.salary_structure = st_name[0][0]
@@ -256,7 +169,7 @@ class SalarySlip(TransactionBase):
 		else:
 			self.salary_structure = None
 			frappe.msgprint(_("No active or default Salary Structure found for employee {0} for the given dates")
-							.format(self.employee), title=_('Salary Structure Missing'))
+				.format(self.employee), title=_('Salary Structure Missing'))
 
 	def pull_sal_struct(self):
 		from erpnext.hr.doctype.salary_structure.salary_structure import make_salary_slip
@@ -272,31 +185,22 @@ class SalarySlip(TransactionBase):
 		make_salary_slip(self._salary_structure_doc.name, self)
 
 	def get_leave_details(self, joining_date=None, relieving_date=None, lwp=None, for_preview=0):
-		MonthDays = get_month_days(self.start_date)
 		if not joining_date:
 			joining_date, relieving_date = frappe.get_cached_value("Employee", self.employee,
-																   ["date_of_joining", "relieving_date"])
+				["date_of_joining", "relieving_date"])
 
-		working_days = date_diff(self.end_date, self.start_date) + 1
-		if working_days > MonthDays:
-			working_days = MonthDays
-
+		# working_days = date_diff(self.end_date, self.start_date) + 1
+		working_days = 30
 		if for_preview:
 			self.total_working_days = working_days
 			self.payment_days = working_days
 			return
 
 		holidays = self.get_holidays_for_employee(self.start_date, self.end_date)
-		self.holidays = len(holidays)
-
 		actual_lwp = self.calculate_lwp(holidays, working_days)
-		leave_lwpp = self.calculate_lwpp(holidays, working_days)
-
-		actual_lwp += leave_lwpp
-
 		if not cint(frappe.db.get_value("HR Settings", None, "include_holidays_in_total_working_days")):
-			# working_days -= len(holidays)
-			if working_days < 0:
+			working_days_t = working_days - len(holidays)
+			if working_days_t < 0:
 				frappe.throw(_("There are more holidays than working days this month."))
 
 		if not lwp:
@@ -306,11 +210,11 @@ class SalarySlip(TransactionBase):
 
 		self.total_working_days = working_days
 		self.leave_without_pay = lwp
-		payment_days = flt(self.get_payment_days(joining_date, relieving_date)) - flt(lwp)
+
+		payment_days =working_days - flt(lwp)
 		self.payment_days = payment_days > 0 and payment_days or 0
 
 	def get_payment_days(self, joining_date, relieving_date):
-		MonthDays = get_month_days(self.start_date)
 		start_date = getdate(self.start_date)
 		if joining_date:
 			if getdate(self.start_date) <= joining_date <= getdate(self.end_date):
@@ -324,11 +228,9 @@ class SalarySlip(TransactionBase):
 				end_date = relieving_date
 			elif relieving_date < getdate(self.start_date):
 				frappe.throw(_("Employee relieved on {0} must be set as 'Left'")
-							 .format(relieving_date))
+					.format(relieving_date))
 
-		payment_days = date_diff(end_date, start_date) + 1
-		if payment_days > MonthDays:
-			payment_days = MonthDays
+		payment_days = 30
 
 		if not cint(frappe.db.get_value("HR Settings", None, "include_holidays_in_total_working_days")):
 			holidays = self.get_holidays_for_employee(start_date, end_date)
@@ -342,10 +244,10 @@ class SalarySlip(TransactionBase):
 				parent=%(holiday_list)s
 				and holiday_date >= %(start_date)s
 				and holiday_date <= %(end_date)s''', {
-			"holiday_list": holiday_list,
-			"start_date": start_date,
-			"end_date": end_date
-		})
+					"holiday_list": holiday_list,
+					"start_date": start_date,
+					"end_date": end_date
+				})
 
 		holidays = [cstr(i) for i in holidays]
 
@@ -371,30 +273,6 @@ class SalarySlip(TransactionBase):
 				lwp = cint(leave[0][1]) and (lwp + 0.5) or (lwp + 1)
 		return lwp
 
-	def calculate_lwpp(self, holidays, working_days):
-		return  0
-		lwpp = 0.0
-		holidays = "','".join(holidays)
-		for d in range(working_days):
-			dt = add_days(cstr(getdate(self.start_date)), d)
-			leave = frappe.db.sql("""
-					select t1.name, t1.half_day, 1 - (t2.payroll_ratio / 100) payroll_ratio
-					from `tabLeave Application` t1, `tabLeave Type` t2
-					where t2.name = t1.leave_type
-					and t2.vacation_type='Sick Vacation'
-					and t1.docstatus = 1
-					and t1.status = 'Approved'
-					and t1.employee = %(employee)s
-					and CASE WHEN t2.include_holiday != 1 THEN %(dt)s not in ('{0}') and %(dt)s between from_date and to_date
-					WHEN t2.include_holiday THEN %(dt)s between from_date and to_date
-					END
-					""".format(holidays), {"employee": self.employee, "dt": dt})
-			if leave:
-				lwpp = (cint(leave[0][1]) and (lwpp + 0.5)) or (flt(leave[0][2]) and (lwpp + flt(leave[0][2]))) or (
-						lwpp + 1)
-
-		return lwpp
-
 	def add_earning_for_hourly_wages(self, doc, salary_component, amount):
 		row_exists = False
 		for row in doc.earnings:
@@ -419,7 +297,6 @@ class SalarySlip(TransactionBase):
 
 		self.gross_pay = self.get_component_totals("earnings")
 		self.total_deduction = self.get_component_totals("deductions")
-		self.sum_components('insurance', 'total_deduction')
 
 		self.set_loan_repayment()
 
@@ -440,21 +317,9 @@ class SalarySlip(TransactionBase):
 
 	def add_structure_components(self):
 		data = self.get_data_for_eval()
-
-		Stop_working_Percentage = self.Check_Stop_Working(self.start_date, self.end_date, self.employee)
-		Stop_working_Percentage = (Stop_working_Percentage if Stop_working_Percentage != 0.0 else 0.0)
-		treatment_percentage = self.check_treatment_per(self.start_date, self.end_date, self.employee)
-		treatment_percentage = (treatment_percentage if treatment_percentage else 1.0)
-
-		for key in ('earnings', 'deductions', 'insurance'):
+		for key in ('earnings', 'deductions'):
 			for struct_row in self._salary_structure_doc.get(key):
 				amount = self.eval_condition_and_formula(struct_row, data)
-				if key == 'earnings':
-					Stop_working_amount = (amount * Stop_working_Percentage)
-					amount = amount - Stop_working_amount
-					if not struct_row.abbr == 'IN':
-						amount = (amount * treatment_percentage)
-
 				if amount and struct_row.statistical_component == 0:
 					self.update_component_row(struct_row, amount, key)
 
@@ -463,7 +328,7 @@ class SalarySlip(TransactionBase):
 		data = frappe._dict()
 
 		data.update(frappe.get_doc("Salary Structure Assignment",
-								   {"employee": self.employee, "salary_structure": self.salary_structure}).as_dict())
+			{"employee": self.employee, "salary_structure": self.salary_structure}).as_dict())
 
 		data.update(frappe.get_doc("Employee", self.employee).as_dict())
 		data.update(self.as_dict())
@@ -473,93 +338,42 @@ class SalarySlip(TransactionBase):
 		for sc in salary_components:
 			data.setdefault(sc.salary_component_abbr, 0)
 
-		for key in ('earnings', 'deductions', 'insurance'):
+		for key in ('earnings', 'deductions'):
 			for d in self.get(key):
 				data[d.abbr] = d.amount
 
 		return data
 
 	def eval_condition_and_formula(self, d, data):
-		amount_based_on_func = 0.0
-		# try:
-		condition = d.condition.strip() if d.condition else None
-		if condition:
-			if not frappe.safe_eval(condition, self.whitelisted_globals, data):
-				return None
+		try:
+			condition = d.condition.strip() if d.condition else None
+			if condition:
+				if not frappe.safe_eval(condition, self.whitelisted_globals, data):
+					return None
+			amount = d.amount
+			if d.amount_based_on_formula:
+				formula = d.formula.strip() if d.formula else None
+				if formula:
+					amount = flt(frappe.safe_eval(formula, self.whitelisted_globals, data), d.precision("amount"))
+			if amount:
+				data[d.abbr] = amount
 
-		if d.amount_based_on_func:
-			if d.salary_component in ["Penalties"]:
-				d.amount = self.calculate_penalty(data, d)
+			return amount
 
-			if d.salary_component in ["Indemnity"]:
-				d.amount = self.calculate_indemnity(data, d)
-
-			if d.abbr=="AB":
-				amount_based_on_func = self.calculate_absence_days(data, d)
-				# msgprint(str(amount_based_on_func))
-			if d.abbr=="OVRTM":
-				amount_based_on_func = self.calculate_overtime(data, d)
-			if d.abbr=="DELAYCut":
-				amount_based_on_func = self.calculate_delay_minutes(data, d)
-
-		amount = d.amount
-		if d.amount_based_on_formula:
-			formula = d.formula.strip() if d.formula else None
-			# msgprint(str(d.salary_component)+"============formula====="+str(formula))
-			if formula:
-				amount = flt(frappe.safe_eval(formula, self.whitelisted_globals, data), d.precision("amount"))
-				if d.abbr in ("AB","OVRTM","DELAYCut"):
-					amount = amount_based_on_func * amount
-
-
-		if amount:
-			data[d.abbr] = amount
-
-		return amount
-
-		# except NameError as err:
-		# 	frappe.throw(_("Name error: {0}".format(err)))
-		# except SyntaxError as err:
-		# 	frappe.throw(_("Syntax error in formula or condition: {0}".format(err)))
-		# except Exception as e:
-		# 	frappe.throw(_("Error in formula or condition: {0}".format(e)))
-		# 	raise
-	def calculate_delay_minutes (self,data,d):
-		MonthDays = get_month_days(self.start_date)
-		daily_work_hours = get_daily_work_hours()
-		# get delay minutes from time attendance
-		# total_minutes = self.get_dela_mintues(self.employee,self.start_date)
-		total_minutes = 480
-		amount_per_minute = flt(total_minutes) / (flt(daily_work_hours) * 60) / flt(MonthDays)
-
-		return amount_per_minute
-
-	def calculate_overtime(self,data, d):
-		MonthDays = get_month_days(self.start_date)
-		# get over time from time attendance
-		# total_minutes = self.get_over_time(self.employee,self.start_date)
-		total_minitues = 180
-		over_time_hour_range = get_over_time_hour_range()
-		daily_work_hours = get_daily_work_hours()
-		total_minitues = flt(total_minitues) * flt(over_time_hour_range)
-		amount_per_minute = total_minitues / MonthDays/daily_work_hours/60
-
-		return amount_per_minute
-
-	def calculate_absence_days(self,data, d):
-		MonthDays = get_month_days(self.start_date)
-		# get absence from time attendance
-		# total_absence_days = self.absence_days(self.employee,self.start_date)
-		total_absence_days = 3
-		amount_for_absence =  flt(total_absence_days) / flt(MonthDays)
-		return amount_for_absence
+		except NameError as err:
+			frappe.throw(_("Name error: {0}".format(err)))
+		except SyntaxError as err:
+			frappe.throw(_("Syntax error in formula or condition: {0}".format(err)))
+		except Exception as e:
+			frappe.throw(_("Error in formula or condition: {0}".format(e)))
+			raise
 
 	def add_employee_benefits(self, payroll_period):
 		for struct_row in self._salary_structure_doc.get("earnings"):
 			if struct_row.is_flexible_benefit == 1:
 				if frappe.db.get_value("Salary Component", struct_row.salary_component, "pay_against_benefit_claim") != 1:
 					benefit_component_amount = get_benefit_component_amount(self.employee, self.start_date, self.end_date,
-																			struct_row.salary_component, self._salary_structure_doc, self.payroll_frequency, payroll_period)
+						struct_row.salary_component, self._salary_structure_doc, self.payroll_frequency, payroll_period)
 					if benefit_component_amount:
 						self.update_component_row(struct_row, benefit_component_amount, "earnings")
 				else:
@@ -573,7 +387,7 @@ class SalarySlip(TransactionBase):
 		if payroll_period:
 			if (getdate(payroll_period.end_date) <= getdate(self.end_date)):
 				last_benefits = get_last_payroll_period_benefits(self.employee, self.start_date, self.end_date,
-																 payroll_period, self._salary_structure_doc)
+					payroll_period, self._salary_structure_doc)
 				if last_benefits:
 					for last_benefit in last_benefits:
 						last_benefit = frappe._dict(last_benefit)
@@ -600,7 +414,7 @@ class SalarySlip(TransactionBase):
 
 		if not tax_components:
 			tax_components = [d.name for d in frappe.get_all("Salary Component", filters={"variable_based_on_taxable_salary": 1})
-							  if d.name not in other_deduction_components]
+				if d.name not in other_deduction_components]
 
 		for d in tax_components:
 			tax_amount = self.calculate_variable_based_on_taxable_salary(d, payroll_period)
@@ -624,7 +438,6 @@ class SalarySlip(TransactionBase):
 					'do_not_include_in_total' : struct_row.do_not_include_in_total,
 					'is_tax_applicable': struct_row.is_tax_applicable,
 					'is_flexible_benefit': struct_row.is_flexible_benefit,
-					'depends_on_lwp': struct_row.depends_on_lwp,
 					'variable_based_on_taxable_salary': struct_row.variable_based_on_taxable_salary,
 					'deduct_full_tax_on_selected_payroll_date': struct_row.deduct_full_tax_on_selected_payroll_date,
 					'additional_amount': amount if struct_row.get("is_additional_component") else 0
@@ -647,7 +460,7 @@ class SalarySlip(TransactionBase):
 	def calculate_variable_based_on_taxable_salary(self, tax_component, payroll_period):
 		if not payroll_period:
 			frappe.msgprint(_("Start and end dates not in a valid Payroll Period, cannot calculate {0}.")
-							.format(tax_component))
+				.format(tax_component))
 			return
 
 		# Deduct taxes forcefully for unsubmitted tax exemption proof and unclaimed benefits in the last period
@@ -660,7 +473,7 @@ class SalarySlip(TransactionBase):
 	def calculate_variable_tax(self, payroll_period, tax_component):
 		# get remaining numbers of sub-period (period for which one salary is processed)
 		remaining_sub_periods = get_period_factor(self.employee,
-												  self.start_date, self.end_date, self.payroll_frequency, payroll_period)[1]
+			self.start_date, self.end_date, self.payroll_frequency, payroll_period)[1]
 
 		# get taxable_earnings, paid_taxes for previous period
 		previous_taxable_earnings = self.get_taxable_earnings_for_prev_period(payroll_period.start_date, self.start_date)
@@ -687,7 +500,7 @@ class SalarySlip(TransactionBase):
 
 		# Total taxable earnings including additional and other incomes
 		total_taxable_earnings = previous_taxable_earnings + current_structured_taxable_earnings + future_structured_taxable_earnings \
-								 + current_additional_earnings + other_incomes + unclaimed_taxable_benefits - total_exemption_amount
+			+ current_additional_earnings + other_incomes + unclaimed_taxable_benefits - total_exemption_amount
 
 		# Total taxable earnings without additional earnings with full tax
 		total_taxable_earnings_without_full_tax_addl_components = total_taxable_earnings - current_additional_earnings_with_full_tax
@@ -708,66 +521,7 @@ class SalarySlip(TransactionBase):
 
 		return current_tax_amount
 
-	def calculate_indemnity(self, data, d):
-
-		current_gross_pay = self.calculate_gross_pay(data)
-
-		if data['employee_work_injuries']:
-			for work_injuriy in data['employee_work_injuries']:
-				if getdate(data['start_date']) <= work_injuriy.injury_date <= getdate(data['end_date']):
-					with_indemnity = frappe.db.get_value("Injury Type", work_injuriy.injury_type, "with_indemnity")
-					if with_indemnity:
-						indemnity_days_for_work_injuries = int(
-							frappe.db.get_single_value('HR Settings', 'indemnity_days_for_work_injuries') or 60)
-						if data['IN']:
-							d.amount = ((current_gross_pay - float(
-								data['IN'])) / 30.0) * indemnity_days_for_work_injuries
-						else:
-							d.amount = (current_gross_pay / 30.0) * indemnity_days_for_work_injuries
-
-		else:
-			d.amount = 0
-
-		return d.amount
-
-	def sum_components(self, component_type, total_field):
-		joining_date, relieving_date = frappe.db.get_value("Employee", self.employee,
-														   ["date_of_joining", "relieving_date"])
-
-		if not relieving_date:
-			relieving_date = getdate(self.end_date)
-
-		if not joining_date:
-			frappe.throw(_("Please set the Date Of Joining for employee {0}").format(
-				frappe.bold(self.employee_name)))
-
-		for d in self.get(component_type):
-			if (self.salary_structure and
-					cint(d.depends_on_lwp) and
-					(not
-					 self.salary_slip_based_on_timesheet or
-					 getdate(self.start_date) < joining_date or
-					 getdate(self.end_date) > relieving_date
-					)):
-
-				d.amount = rounded(
-					(flt(d.default_amount) * flt(self.payment_days)
-					 / cint(self.total_working_days)), self.precision("amount", component_type)
-				)
-
-			elif not self.payment_days and not self.salary_slip_based_on_timesheet and \
-					cint(d.depends_on_lwp):
-				d.amount = 0
-
-			elif not d.amount:
-				d.amount = d.default_amount
-
-			if not d.do_not_include_in_total:
-				self.set(total_field, self.get(total_field) + flt(d.amount))
-		# msgprint(cstr(self.total_deduction))
-
 	def get_taxable_earnings_for_prev_period(self, start_date, end_date):
-
 		taxable_earnings = frappe.db.sql("""
 			select sum(sd.amount)
 			from
@@ -781,10 +535,10 @@ class SalarySlip(TransactionBase):
 				and ss.start_date between %(from_date)s and %(to_date)s
 				and ss.end_date between %(from_date)s and %(to_date)s
 			""", {
-			"employee": self.employee,
-			"from_date": start_date,
-			"to_date": end_date
-		})
+				"employee": self.employee,
+				"from_date": start_date,
+				"to_date": end_date
+			})
 		return flt(taxable_earnings[0][0]) if taxable_earnings else 0
 
 	def get_tax_paid_in_period(self, start_date, end_date, tax_component):
@@ -811,100 +565,9 @@ class SalarySlip(TransactionBase):
 
 		return total_tax_paid
 
-	def get_penalty_rule(self,penalty, apply_date, times):
-		formula = ""
-		Penalty_Dict = frappe.db.sql((
-			"""
-			   select PS.penalty_type,PS.from_date,PS.to_date,
-			   PD.times, PD.deduct_value,PD.deduct_value_type,PD.deduct_value_of,
-			   (select salary_component_abbr from `tabSalary Component` where salary_component=PD.deduct_value_of)  abbr
-				from `tabPenalties Settings` PS
-					 INNER JOIN `tabPenalties Data` PD
-					   on PS.name = PD.parent
-					   and PS.penalty_type = %(penalty)s
-					   and  %(apply_date)s  BETWEEN PS.from_date AND ifnull(PS.to_date,now())
-					   and times = %(times)s
-					   order by PS.penalty_type, PD.times;
-			 """
-		), ({'apply_date': apply_date, "penalty": penalty, "times": times}),
-			as_dict=True)
-
-		if Penalty_Dict:
-			Penalty_Dict = Penalty_Dict[0]
-			deduct_value = Penalty_Dict["deduct_value"]
-			deduct_value_type = Penalty_Dict["deduct_value_type"]
-			abbr = Penalty_Dict["abbr"]
-			if (deduct_value_type == "Days"):
-				formula = "( " + str(abbr) + "/30) *  " + \
-						  str(float(deduct_value)) + " "
-			elif (deduct_value_type == "Percentage"):
-				formula = "(" + str(float(deduct_value)) + \
-						  " / 100) * " + str(abbr) + " "
-			elif (deduct_value_type == "Amount"):
-				formula = deduct_value
-		# frappe.msgprint(str(formula))
-		return formula
-
-	def pre_penalty_amount(self,penalty_list, CountItems, data, mounth_pen_list):
-		penalty_set = []
-		penalty_amount = 0
-		for emp_penalty in penalty_list:
-			if emp_penalty["penaltytype"] in mounth_pen_list:
-				if emp_penalty["penaltytype"] not in penalty_set:
-					penalty_set.append(emp_penalty["penaltytype"])
-					rule_dict = self.get_penalty_rule(emp_penalty["penaltytype"], emp_penalty['apply_date'],
-												 CountItems[emp_penalty["penaltytype"]])
-
-					formula = rule_dict.strip() if rule_dict else None
-					if formula:
-						penalty_amount += frappe.safe_eval(formula, None, data)
-
-		return penalty_amount
-
-	def calculate_penalty(self, data, d):
-		penalty_list, month_penalty_list = [], []
-		mounth_penalty, penalty_amount, calc_using_pre = 0, 0, False
-		if data['employee_penalties']:
-			# msgprint(str(data['employee_penalties']))
-			for penalty in data['employee_penalties']:
-				if data['end_date']:
-					if not data['start_date']:
-						data['start_date'] = data['end_date'].replace(
-							data['end_date'].split('-')[-1], '1')
-					# msgprint("penalty.penalty_type====="+str(penalty.penalty_type))
-					rule_start_date = frappe.db.get_value("Penalties Settings", {"penalty_type": penalty.penalty_type},"from_date")
-					rule_end_date = frappe.db.get_value("Penalties Settings", {"penalty_type": penalty.penalty_type},"to_date")
-					# frappe.msgprint(str(rule_end_date)+"===========>" + str(rule_start_date))
-					if getdate(rule_start_date) <= penalty.apply_date <= getdate(rule_end_date):
-						if penalty.apply_date < getdate(data['end_date']):
-							penalty_list.append({"penaltytype": penalty.penalty_type, "apply_date": penalty.apply_date})
-						if getdate(data['start_date']) <= penalty.apply_date <= getdate(data['end_date']):
-							month_penalty_list.append({"penaltytype": penalty.penalty_type, "apply_date": penalty.apply_date})
-
-			CountItems = Counter(d['penaltytype']
-								 for d in penalty_list)
-			Count_month_penalty = Counter(d['penaltytype']
-										  for d in month_penalty_list)
-
-			for item in list(CountItems):
-				if Count_month_penalty[item] == 1:
-					calc_using_pre = True
-
-				if (not CountItems[item] == Count_month_penalty[item]) and Count_month_penalty[item]:
-					mounth_penalty += self.mounth_penalty_amount(month_penalty_list, item, Count_month_penalty[item], data)
-
-
-			if mounth_penalty or calc_using_pre:
-				penalty_amount = self.pre_penalty_amount(penalty_list, CountItems, data, list(Count_month_penalty))
-
-			d.amount = penalty_amount # + mounth_penalty# Percentagei comment this because it acumelate the amount of last months to current
-
-		else:
-			return d.amount
-		return d.amount
 	def get_taxable_earnings(self, based_on_payment_days=0):
 		joining_date, relieving_date = frappe.get_cached_value("Employee", self.employee,
-															   ["date_of_joining", "relieving_date"])
+			["date_of_joining", "relieving_date"])
 
 		if not relieving_date:
 			relieving_date = getdate(self.end_date)
@@ -946,15 +609,15 @@ class SalarySlip(TransactionBase):
 	def get_amount_based_on_payment_days(self, row, joining_date, relieving_date):
 		amount, additional_amount = row.amount, row.additional_amount
 		if (self.salary_structure and
-				cint(row.depends_on_payment_days) and cint(self.total_working_days) and
-				(not self.salary_slip_based_on_timesheet or
-				 getdate(self.start_date) < joining_date or
-				 getdate(self.end_date) > relieving_date
-				)):
+			cint(row.depends_on_payment_days) and cint(self.total_working_days) and
+			(not self.salary_slip_based_on_timesheet or
+				getdate(self.start_date) < joining_date or
+				getdate(self.end_date) > relieving_date
+			)):
 			additional_amount = flt((flt(row.additional_amount) * flt(self.payment_days)
-									 / cint(self.total_working_days)), row.precision("additional_amount"))
+				/ cint(self.total_working_days)), row.precision("additional_amount"))
 			amount = flt((flt(row.default_amount) * flt(self.payment_days)
-						  / cint(self.total_working_days)), row.precision("amount")) + additional_amount
+				/ cint(self.total_working_days)), row.precision("amount")) + additional_amount
 
 		elif not self.payment_days and not self.salary_slip_based_on_timesheet and cint(row.depends_on_payment_days):
 			amount, additional_amount = 0, 0
@@ -1002,14 +665,14 @@ class SalarySlip(TransactionBase):
 		total_exemption_amount, other_incomes = 0, 0
 		if self.deduct_tax_for_unsubmitted_tax_exemption_proof:
 			exemption_proof = frappe.db.get_value("Employee Tax Exemption Proof Submission",
-												  {"employee": self.employee, "payroll_period": payroll_period.name, "docstatus": 1},
-												  ["exemption_amount", "income_from_other_sources"])
+				{"employee": self.employee, "payroll_period": payroll_period.name, "docstatus": 1},
+				["exemption_amount", "income_from_other_sources"])
 			if exemption_proof:
 				total_exemption_amount, other_incomes = exemption_proof
 		else:
 			declaration = frappe.db.get_value("Employee Tax Exemption Declaration",
-											  {"employee": self.employee, "payroll_period": payroll_period.name, "docstatus": 1},
-											  ["total_exemption_amount", "income_from_other_sources"])
+				{"employee": self.employee, "payroll_period": payroll_period.name, "docstatus": 1},
+				["total_exemption_amount", "income_from_other_sources"])
 			if declaration:
 				total_exemption_amount, other_incomes = declaration
 
@@ -1069,7 +732,7 @@ class SalarySlip(TransactionBase):
 
 	def set_component_amounts_based_on_payment_days(self):
 		joining_date, relieving_date = frappe.get_cached_value("Employee", self.employee,
-															   ["date_of_joining", "relieving_date"])
+			["date_of_joining", "relieving_date"])
 
 		if not relieving_date:
 			relieving_date = getdate(self.end_date)
@@ -1109,7 +772,7 @@ class SalarySlip(TransactionBase):
 			where
 				l.name = rps.parent and rps.payment_date between %s and %s and
 				l.repay_from_salary = 1 and l.docstatus = 1 and l.applicant = %s""",
-							 (self.start_date, self.end_date, self.employee), as_dict=True) or []
+			(self.start_date, self.end_date, self.employee), as_dict=True) or []
 
 	def update_salary_slip_in_additional_salary(self):
 		salary_slip = self.name if self.docstatus==1 else None
@@ -1120,16 +783,23 @@ class SalarySlip(TransactionBase):
 
 	def email_salary_slip(self):
 		receiver = frappe.db.get_value("Employee", self.employee, "prefered_email")
+		hr_settings = frappe.get_single("HR Settings")
+		message = "Please see attachment"
+		password = None
+		if hr_settings.encrypt_salary_slips_in_emails:
+			password = generate_password_for_pdf(hr_settings.password_policy, self.employee)
+			message += """<br>Note: Your salary slip is password protected,
+				the password to unlock the PDF is of the format {0}. """.format(hr_settings.password_policy)
 
 		if receiver:
 			email_args = {
 				"recipients": [receiver],
-				"message": _("Please see attachment"),
+				"message": _(message),
 				"subject": 'Salary Slip - from {0} to {1}'.format(self.start_date, self.end_date),
-				"attachments": [frappe.attach_print(self.doctype, self.name, file_name=self.name)],
+				"attachments": [frappe.attach_print(self.doctype, self.name, file_name=self.name, password=password)],
 				"reference_doctype": self.doctype,
 				"reference_name": self.name
-			}
+				}
 			if not frappe.flags.in_test:
 				enqueue(method=frappe.sendmail, queue='short', timeout=300, is_async=True, **email_args)
 			else:
@@ -1171,24 +841,22 @@ class SalarySlip(TransactionBase):
 		self.get_leave_details(lwp=lwp)
 		self.calculate_net_pay()
 
-	def unlink_ref_doc_from_salary_slip(ref_no):
-		linked_ss = frappe.db.sql_list("""select name from `tabSalary Slip`
-		where journal_entry=%s and docstatus < 2""", (ref_no))
-		if linked_ss:
-			for ss in linked_ss:
-				ss_doc = frappe.get_doc("Salary Slip", ss)
-				frappe.db.set_value("Salary Slip", ss_doc.name, "journal_entry", "")
+def unlink_ref_doc_from_salary_slip(ref_no):
+	linked_ss = frappe.db.sql_list("""select name from `tabSalary Slip`
+	where journal_entry=%s and docstatus < 2""", (ref_no))
+	if linked_ss:
+		for ss in linked_ss:
+			ss_doc = frappe.get_doc("Salary Slip", ss)
+			frappe.db.set_value("Salary Slip", ss_doc.name, "journal_entry", "")
 
-	def mounth_penalty_amount(self,month_penalty_list, item, Count_month_penalty, data):
-		penalty_amount = 0
-		penalty_set = []
-		for emp_penalty in month_penalty_list:
-			if emp_penalty["penaltytype"] == item not in penalty_set:
-				if Count_month_penalty >= 1:
-					penalty_set.append(emp_penalty["penaltytype"])
-					rule_dict = self.get_penalty_rule(emp_penalty["penaltytype"], emp_penalty['apply_date'], Count_month_penalty)
-					formula = rule_dict.strip() if rule_dict else None
-					# msgprint("formula=="+str(formula))
-					if formula:
-						penalty_amount += frappe.safe_eval(formula, None, data)
-		return penalty_amount
+def generate_password_for_pdf(policy_template, employee):
+	employee = frappe.get_doc("Employee", employee)
+	return policy_template.format(**employee.as_dict())
+
+
+def get_salary_detatil(name):
+	data = frappe.db.get_value("Employee", name, ["salary_mode"], as_dict=1)
+	if data :
+		return data['salary_mode']
+	else:
+		return None

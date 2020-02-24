@@ -1,0 +1,71 @@
+{
+ "creation": "2020-02-18 10:10:55.809130",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "employee_general_number",
+  "employee_insurance_nmuber",
+  "empluyee_type",
+  "amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Employee Name"
+  },
+  {
+   "fieldname": "employee_general_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Employee General Number"
+  },
+  {
+   "fieldname": "employee_insurance_nmuber",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Employee Insurance Nmuber"
+  },
+  {
+   "fieldname": "empluyee_type",
+   "fieldtype": "Data",
+   "in_preview": 1,
+   "label": "Employee Type"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Amount",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-02-18 10:35:02.839541",
+ "modified_by": "Administrator",
+ "module": "HR",
+ "name": "Social insurance Payroll Table",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
